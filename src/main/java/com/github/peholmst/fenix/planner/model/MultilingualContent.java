@@ -17,32 +17,27 @@
  */
 package com.github.peholmst.fenix.planner.model;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * Class that holds multiple instances of the same {@link Localized} class, for
- * different locales. <b>The localized class is required to have a public
- * constructor that takes one {@link Locale} instance as its only parameter.</b>
+ * TODO Document me!
  *
  * @author Petter Holmström
  * @param <C>
  */
-public class MultilingualContent<C extends Localized> {
+public class MultilingualContent<C> {
 
     private final Map<Locale, C> contents = new HashMap<>();
-    private final Class<C> contentClass;
+    private final C defaultValue;
 
-    /**
-     * Constructor.
-     *
-     * @param contentClass the class of the localized content, must not be
-     * {@code null}.
-     */
-    public MultilingualContent(Class<C> contentClass) {
-        this.contentClass = contentClass;
+    public MultilingualContent(C defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public MultilingualContent() {
+        this(null);
     }
 
     /**
@@ -57,8 +52,8 @@ public class MultilingualContent<C extends Localized> {
 
     /**
      * Returns the content for the specified locale (never {@code null}). If no
-     * content has been set, a new instance of the localized class is created
-     * and returned.
+     * content has been set, the default value is returned (can be
+     * {@code null}).
      *
      * @param locale the locale for which the content should be returned, must
      * not be {@code null}.
@@ -66,12 +61,7 @@ public class MultilingualContent<C extends Localized> {
     public C get(Locale locale) {
         C content = contents.get(locale);
         if (content == null) {
-            try {
-                content = contentClass.getConstructor(Locale.class).newInstance(locale);
-                contents.put(locale, content);
-            } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new RuntimeException("Could not create new instance of content", ex);
-            }
+            content = defaultValue;
         }
         return content;
     }
@@ -80,10 +70,11 @@ public class MultilingualContent<C extends Localized> {
      * Adds localized content to this object and returns the content to allow
      * for method chaining.
      *
+     * @param locale the locale of the content, must not be {@code null}.
      * @param content the localized content to add, must not be {@code null}.
      */
-    public C set(C content) {
-        contents.put(content.getLocale(), content);
+    public C set(Locale locale, C content) {
+        contents.put(locale, content);
         return content;
     }
 

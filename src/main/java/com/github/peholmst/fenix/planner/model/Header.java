@@ -17,18 +17,35 @@
  */
 package com.github.peholmst.fenix.planner.model;
 
-import java.util.Locale;
+import java.awt.image.BufferedImage;
 
 /**
- * Interface to be implemented by all classes whose content is specific to a
- * locale (such as strings in a specific language).
- *
  * @author Petter Holmström
  */
-public interface Localized {
+public class Header {
 
-    /**
-     * Returns the locale of the content, never {@code null}.
-     */
-    Locale getLocale();
+    private final MultilingualContent<String> departmentName = new MultilingualContent<>("");
+    private final MultilingualContent<String> sectionName = new MultilingualContent<>("");
+    private final MultilingualContent<String> heading = new MultilingualContent<>("");
+    private BufferedImage logo;
+
+    public BufferedImage getLogo() {
+        return logo;
+    }
+
+    public void setLogo(BufferedImage logo) {
+        this.logo = logo;
+    }
+
+    public MultilingualContent<String> getDepartmentName() {
+        return departmentName;
+    }
+
+    public MultilingualContent<String> getSectionName() {
+        return sectionName;
+    }
+
+    public MultilingualContent<String> getHeading() {
+        return heading;
+    }
 }
