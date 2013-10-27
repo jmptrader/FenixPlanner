@@ -18,11 +18,14 @@
 package com.github.peholmst.fenix.planner.pdf;
 
 import com.github.peholmst.fenix.planner.model.Event;
+import com.github.peholmst.fenix.planner.model.Organizer;
 import com.github.peholmst.fenix.planner.model.Program;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import javax.imageio.ImageIO;
@@ -41,6 +44,9 @@ public class PDFGeneratorTestProgram {
             + "Aliquam erat volutpat. Nam massa ligula, molestie in tempor quis, sagittis hendrerit dolor. Pellentesque nec sapien volutpat, mattis nisi a, imperdiet metus. Duis venenatis neque ut dui ornare, quis ultrices ipsum adipiscing. Morbi ac dui commodo, hendrerit sapien adipiscing, congue velit. Aliquam sit amet bibendum libero. Pellentesque at neque ut ante dignissim tincidunt a vel magna. Aenean id dui convallis, suscipit mauris in, molestie enim. Nam tincidunt leo condimentum fermentum ultrices. Nunc suscipit eleifend nulla, sed tristique neque congue sit amet. Nulla facilisi. Aliquam et velit eget magna dictum tempus tincidunt eu eros. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nam a nunc lacus. "
             + "Nullam mollis nisl libero, nec condimentum lorem aliquet sit amet. Donec eu arcu turpis. Sed sagittis augue at metus tempus sagittis. Proin id justo aliquet, tristique mauris eget, gravida tellus. Nulla tincidunt turpis ut odio ultricies aliquam nec eu est. Praesent a feugiat neque. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed euismod elit vel ligula vehicula, ac euismod libero vehicula. Cras et viverra orci, at ullamcorper nibh. Etiam et laoreet justo. Integer tempor tincidunt est, id posuere metus fermentum sed. Donec aliquam lacinia libero vitae fringilla. Maecenas vitae dictum nulla.";
 
+    private static final String[] NAMES = {"Kalle Anka", "Joakim von Anka", "Alexander Lukas", "Musse Pigg", "Kajsa Anka", "Farmor Anka"};
+    private static final String[] INITIALS = {"KA", "JvA", "AL", "MP", "KjA", "FA"};
+    
     public static void main(String[] args) throws Exception {
         Program program = createProgram();
 
@@ -53,10 +59,22 @@ public class PDFGeneratorTestProgram {
     private static Program createProgram() throws IOException {
         Program program = new Program();
 
-        program.getHeader().getDepartmentName().set(sv, "Pargas Frivilliga Brandkår");
+        program.getHeader().getDepartmentName().set(sv, "Ankeborgs Frivilliga Brandkår");
         program.getHeader().getSectionName().set(sv, "Larmavdelningen");
+        program.getHeader().getHeading().set(sv, "Övningsprogram för år 2013");
         program.getHeader().setLogo(ImageIO.read(PDFGeneratorTestProgram.class.getResourceAsStream("logo.png")));
-
+        program.getHeader().setAuthorInitials("K.A.");
+        
+        Organizer organizer;
+        List<Organizer> organizers = new ArrayList<>();
+        for (int i = 0; i < NAMES.length; ++i) {
+            organizer = program.addOrganizer();
+            organizer.setFullName(NAMES[i]);
+            organizer.setInitials(INITIALS[i]);
+            organizers.add(organizer);
+            // TODO phone number & e-mail
+        }
+        
         Event event;
         LocalDate date = new LocalDate(2013, 1, 3);
         for (int i = 0; i < 52; ++i) {
@@ -64,6 +82,7 @@ public class PDFGeneratorTestProgram {
             event.setDate(date);
             event.getSubject().set(sv, pigLatin(30, false));
             event.getDescription().set(sv, pigLatin(150, true));
+            event.setOrganizer(organizers.get(rnd.nextInt(organizers.size())));
             date = date.plusWeeks(1);
         }
         return program;

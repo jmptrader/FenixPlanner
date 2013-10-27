@@ -27,6 +27,7 @@ public class Header {
     private final MultilingualContent<String> departmentName = new MultilingualContent<>("");
     private final MultilingualContent<String> sectionName = new MultilingualContent<>("");
     private final MultilingualContent<String> heading = new MultilingualContent<>("");
+    private String authorInitials = "";
     private BufferedImage logo;
 
     public BufferedImage getLogo() {
@@ -35,6 +36,21 @@ public class Header {
 
     public void setLogo(BufferedImage logo) {
         this.logo = logo;
+    }
+
+    public boolean hasLogo() {
+        return logo != null;
+    }
+
+    public String getAuthorInitials() {
+        return authorInitials;
+    }
+
+    public void setAuthorInitials(String authorInitials) {
+        if (authorInitials == null) {
+            authorInitials = "";
+        }
+        this.authorInitials = authorInitials;
     }
 
     public MultilingualContent<String> getDepartmentName() {

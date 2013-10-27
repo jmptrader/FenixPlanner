@@ -22,8 +22,54 @@ package com.github.peholmst.fenix.planner.model;
  * @author peholmst
  */
 public class Organizer {
-    
+
+    private String initials = "";
+    private String fullName = "";
+    private String phoneNumber = "";
+    private String email = "";
+
     public String getInitials() {
-        return "";
+        return initials;
     }
+
+    public void setInitials(String initials) {
+        if (initials == null) {
+            initials = "";
+        }
+        this.initials = initials;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        if (fullName == null) {
+            fullName = "";
+        }
+        this.fullName = fullName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null) {
+            phoneNumber = "";
+        }
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        if (email == null) {
+            email = "";
+        }
+        this.email = email;
+    }
+
 }

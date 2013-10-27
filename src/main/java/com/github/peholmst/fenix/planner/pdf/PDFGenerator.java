@@ -29,11 +29,16 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.BadPdfFormatException;
 import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfCopy;
+import com.itextpdf.text.pdf.PdfImportedPage;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
@@ -42,7 +47,7 @@ import java.util.Locale;
 
 /**
  * TODO Document me and translate strings
- * 
+ *
  * @author peholmst
  */
 public class PDFGenerator {
@@ -60,23 +65,48 @@ public class PDFGenerator {
     private static final float ART_BOX_RIGHT_MARGIN = 36;
     private static final float ART_BOX_TOP_MARGIN = 36;
     private static final float ART_BOX_BOTTOM_MARGIN = 36;
+    private static final Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLACK);
+    private static final Font subjectFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
+    private static final Font descriptionFont = new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC);
+    private static final Font footerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
+    private static final Font departmentNameFont = new Font(Font.FontFamily.HELVETICA, 14, Font.NORMAL);
+    private static final Font sectionNameFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
+    private static final Font headingFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+    private static final Font authorFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
+    private static final Font programFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL, BaseColor.GRAY);
 
     public PDFGenerator(Program program, Locale locale) {
         this.program = program;
         this.locale = locale;
     }
 
-    public void generate(OutputStream output) throws DocumentException {
+    public void generate(OutputStream output) {
         final Rectangle pageSize = PageSize.A4;
+        final ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
+
         document = new Document(pageSize, LEFT_MARGIN, RIGHT_MARGIN, TOP_MARGIN, BOTTOM_MARGIN);
-        PdfWriter writer = PdfWriter.getInstance(document, output);
-        writer.setBoxSize("art", new Rectangle(ART_BOX_LEFT_MARGIN, ART_BOX_BOTTOM_MARGIN,
-                pageSize.getRight() - ART_BOX_RIGHT_MARGIN,
-                pageSize.getTop() - ART_BOX_TOP_MARGIN));
-        writer.setPageEvent(new HeaderFooter());
-        document.open();
-        document.add(createEventTable());
-        document.close();
+        try {
+            final PdfWriter writer = PdfWriter.getInstance(document, outputBuffer);
+            writer.setBoxSize("art", new Rectangle(ART_BOX_LEFT_MARGIN, ART_BOX_BOTTOM_MARGIN,
+                    pageSize.getRight() - ART_BOX_RIGHT_MARGIN,
+                    pageSize.getTop() - ART_BOX_TOP_MARGIN));
+            writer.setPageEvent(new HeaderFooter());
+            document.open();
+            document.add(createEventTable());
+            document.close();
+            writer.close();
+
+            // Loop through the document again to add the missing page numbers
+            document = new Document();
+            final PdfCopy copy = new PdfCopy(document, output);
+            document.open();
+            final PdfReader reader = new PdfReader(outputBuffer.toByteArray());
+            addPageNumbers(reader, copy);
+            document.close();
+            reader.close();
+        } catch (DocumentException | IOException ex) {
+            throw new PDFGenerationException("Error generating PDF", ex);
+        }
     }
 
     private PdfPTable createEventTable() {
@@ -85,37 +115,32 @@ public class PDFGenerator {
         table.getDefaultCell().setUseAscender(true);
         table.getDefaultCell().setUseDescender(true);
 
-        // Fonts
-        final Font headerFont = new Font(Font.FontFamily.HELVETICA);
-        headerFont.setStyle(Font.BOLD);
-        headerFont.setSize(12);
-        headerFont.setColor(BaseColor.WHITE);
-
-        final Font subjectFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
-        final Font descriptionFont = new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC);
-
         // Header row
-        table.getDefaultCell().setBackgroundColor(BaseColor.GRAY);
+        //table.getDefaultCell().setBackgroundColor(BaseColor.GRAY);
+        table.getDefaultCell().setBorderWidthLeft(0);
+        table.getDefaultCell().setBorderWidthTop(0);
+        table.getDefaultCell().setBorderWidthRight(0);
         table.getDefaultCell().setPadding(5);
-        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_LEFT);
         table.addCell(new Phrase("Datum", headerFont));
         table.addCell(new Phrase("Ämne", headerFont));
         table.addCell(new Phrase("Ansvarig", headerFont));
         table.setHeaderRows(1);
         table.getDefaultCell().setBackgroundColor(null);
-        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_LEFT);
 
         // Events
         for (Event event : program.getEvents()) {
             if (event.getDate().getMonthOfYear() % 2 == 0) {
-                table.getDefaultCell().setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.getDefaultCell().setBackgroundColor(new BaseColor(0xdd, 0xdd, 0xdd));
             } else {
                 table.getDefaultCell().setBackgroundColor(null);
             }
             table.addCell(event.getDate().toString("dd.MM", locale));
             PdfPCell subjectCell = new PdfPCell(table.getDefaultCell());
             subjectCell.addElement(new Phrase(event.getSubject().get(locale), subjectFont));
-            subjectCell.addElement(new Phrase(event.getDescription().get(locale), descriptionFont));
+            if (event.getDescription().hasLocale(locale)) {
+                subjectCell.addElement(new Phrase(event.getDescription().get(locale), descriptionFont));
+            }
             if (event.getOrganizer() == null) {
                 subjectCell.setColspan(2);
             }
@@ -128,20 +153,30 @@ public class PDFGenerator {
         return table;
     }
 
-    private void addPageNumbers() {
-        /*            ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_RIGHT,
-         new Phrase(String.format("Sida %d / %s", pageNumber, document.getP), footerFont),
-         rect.getRight(), rect.getBottom(), 0);*/
+    private void addPageNumbers(PdfReader reader, PdfCopy copy) {
+        int pageCount = reader.getNumberOfPages();
+        PdfImportedPage page;
+        PdfCopy.PageStamp stamp;
+
+        for (int i = 1; i <= pageCount; ++i) {
+            Rectangle rect = reader.getBoxSize(i, "art");
+            page = copy.getImportedPage(reader, i);
+            stamp = copy.createPageStamp(page);
+            // add page numbers
+            ColumnText.showTextAligned(stamp.getUnderContent(), Element.ALIGN_RIGHT,
+                    new Phrase(String.format("%d / %d", i, pageCount), footerFont),
+                    rect.getRight(), rect.getBottom() + 5, 0);
+            try {
+                stamp.alterContents();
+                copy.addPage(page);
+            } catch (BadPdfFormatException | IOException ex) {
+                throw new PDFGenerationException("Error adding page number to page " + i, ex);
+            }
+        }
     }
-    
+
     private class HeaderFooter extends PdfPageEventHelper {
 
-        private final Font footerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        private final Font departmentNameFont = new Font(Font.FontFamily.HELVETICA, 14, Font.NORMAL, BaseColor.BLACK);
-        private final Font sectionNameFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK);
-        private final Font headingFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLACK);
-        private final Font authorFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK);
-        private final Font programFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL, BaseColor.GRAY);
         private final String currentDate;
         private final String programNameAndVersion;
         private Image logo;
@@ -186,7 +221,7 @@ public class PDFGenerator {
                     rect.getLeft() + textXOffset, rect.getTop(), 0);
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
                     new Phrase(program.getHeader().getSectionName().get(locale), sectionNameFont),
-                    rect.getLeft() + textXOffset, rect.getTop() - 14, 0);            
+                    rect.getLeft() + textXOffset, rect.getTop() - 14, 0);
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
                     new Phrase(program.getHeader().getHeading().get(locale).toUpperCase(), headingFont),
                     rect.getLeft() + textXOffset, rect.getTop() - 40, 0);

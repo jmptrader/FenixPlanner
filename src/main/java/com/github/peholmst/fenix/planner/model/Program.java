@@ -19,6 +19,7 @@ package com.github.peholmst.fenix.planner.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +45,18 @@ public class Program {
         return eventList;
     }
 
+    public List<Organizer> getOrganizers() {
+        List<Organizer> organizerList = new ArrayList<>(organizers);
+        Collections.sort(organizerList, new Comparator<Organizer>() {
+
+            @Override
+            public int compare(Organizer o1, Organizer o2) {
+                return o1.getInitials().compareTo(o2.getInitials());
+            }
+        });
+        return organizerList;
+    }
+
     public Event addEvent(Event event) {
         events.add(event);
         return event;
@@ -55,5 +68,14 @@ public class Program {
 
     public void removeEvent(Event event) {
         events.remove(event);
+    }
+
+    public Organizer addOrganizer() {
+        return addOrganizer(new Organizer());
+    }
+
+    public Organizer addOrganizer(Organizer organizer) {
+        organizers.add(organizer);
+        return organizer;
     }
 }
