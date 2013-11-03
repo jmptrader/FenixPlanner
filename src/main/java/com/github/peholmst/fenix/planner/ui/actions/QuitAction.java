@@ -21,7 +21,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
-import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 
 /**
@@ -31,11 +30,8 @@ import javax.swing.KeyStroke;
  */
 public class QuitAction extends AbstractAction {
 
-    private final JFrame mainFrame;
-
-    public QuitAction(JFrame mainFrame) {
-        this.mainFrame = mainFrame;
-        putValue(SHORT_DESCRIPTION, "Sparar alla ändringar och avslutar programmet");
+    public QuitAction() {
+        putValue(SHORT_DESCRIPTION, "Sparar alla ändringar och avslutar applikationen");
         putValue(NAME, "Avsluta");
         putValue(MNEMONIC_KEY, KeyEvent.VK_A);
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Q,
@@ -44,7 +40,7 @@ public class QuitAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        mainFrame.setVisible(false);
+        System.exit(0);
     }
 
 }
