@@ -20,6 +20,7 @@ package com.github.peholmst.fenix.planner.model;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Observable;
 
 /**
  * TODO Document me!
@@ -27,7 +28,7 @@ import java.util.Map;
  * @author Petter Holmström
  * @param <C>
  */
-public class MultilingualContent<C> {
+public class MultilingualContent<C> extends Observable {
 
     private final Map<Locale, C> contents = new HashMap<>();
     private final C defaultValue;
@@ -45,18 +46,19 @@ public class MultilingualContent<C> {
      * not.
      *
      * @param locale the locale to check, must not be {@code null}.
+     * @return true if content exists for the locale, false otherwise.
      */
     public boolean hasLocale(Locale locale) {
         return contents.containsKey(locale);
     }
 
     /**
-     * Returns the content for the specified locale (never {@code null}). If no
-     * content has been set, the default value is returned (can be
-     * {@code null}).
+     * Returns the content for the specified locale. If no content has been set,
+     * the default value is returned.
      *
      * @param locale the locale for which the content should be returned, must
      * not be {@code null}.
+     * @return the content, can be {@code null}.
      */
     public C get(Locale locale) {
         C content = contents.get(locale);
@@ -67,15 +69,19 @@ public class MultilingualContent<C> {
     }
 
     /**
-     * Adds localized content to this object and returns the content to allow
-     * for method chaining.
+     * Adds localized content to this object and notifies the observers. If the
+     * old content and the new content are null or equal, nothing happens.
      *
      * @param locale the locale of the content, must not be {@code null}.
      * @param content the localized content to add, must not be {@code null}.
      */
-    public C set(Locale locale, C content) {
-        contents.put(locale, content);
-        return content;
+    public void set(Locale locale, C content) {
+        C old = contents.get(locale);
+        if (old == null ? old != null : !old.equals(content)) {
+            contents.put(locale, content);
+            setChanged();
+            notifyObservers(locale);
+        }
     }
 
     /**
@@ -86,6 +92,10 @@ public class MultilingualContent<C> {
      * be {@code null}.
      */
     public void remove(Locale locale) {
-        contents.remove(locale);
+        C removed = contents.remove(locale);
+        if (removed != null) {
+            setChanged();
+            notifyObservers(locale);
+        }
     }
 }
