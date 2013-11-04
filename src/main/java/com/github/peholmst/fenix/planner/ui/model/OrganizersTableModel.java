@@ -27,7 +27,7 @@ import javax.swing.table.AbstractTableModel;
 /**
  * Table model for displaying and editing the {@link Organizer}s of a
  * {@link Program} in a Swing table.
- * 
+ *
  * @author Petter Holmström
  */
 public class OrganizersTableModel extends AbstractTableModel implements PropertyChangeListener {
@@ -36,7 +36,6 @@ public class OrganizersTableModel extends AbstractTableModel implements Property
     private static final int COL_EMAIL = 2;
     private static final int COL_NAME = 1;
     private static final int COL_INITIALS = 0;
-
     private Program program;
 
     /**
@@ -134,11 +133,15 @@ public class OrganizersTableModel extends AbstractTableModel implements Property
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (Program.PROP_ORGANIZERS.equals(evt.getPropertyName())) {
-            IndexedPropertyChangeEvent ievt = (IndexedPropertyChangeEvent) evt;
-            if (ievt.getNewValue() == null) {
-                fireTableRowsDeleted(ievt.getIndex(), ievt.getIndex());
-            } else if (ievt.getOldValue() == null) {
-                fireTableRowsInserted(ievt.getIndex(), ievt.getIndex());
+            if (evt instanceof IndexedPropertyChangeEvent) {
+                IndexedPropertyChangeEvent ievt = (IndexedPropertyChangeEvent) evt;
+                if (ievt.getNewValue() == null) {
+                    fireTableRowsDeleted(ievt.getIndex(), ievt.getIndex());
+                } else if (ievt.getOldValue() == null) {
+                    fireTableRowsInserted(ievt.getIndex(), ievt.getIndex());
+                }
+            } else {
+                fireTableDataChanged();
             }
         }
     }
