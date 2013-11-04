@@ -18,8 +18,9 @@
 package com.github.peholmst.fenix.planner.model;
 
 /**
- *
- * @author peholmst
+ * TODO Document me!
+ * 
+ * @author Petter Holmström
  */
 public class Organizer {
 
@@ -27,6 +28,15 @@ public class Organizer {
     private String fullName = "";
     private String phoneNumber = "";
     private String email = "";
+    private Program program;
+
+    public Program getProgram() {
+        return program;
+    }
+
+    void setProgram(Program program) {
+        this.program = program;
+    }
 
     public String getInitials() {
         return initials;
