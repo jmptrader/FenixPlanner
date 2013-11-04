@@ -17,6 +17,7 @@
  */
 package com.github.peholmst.fenix.planner.pdf;
 
+import com.github.peholmst.fenix.planner.ApplicationInfo;
 import com.github.peholmst.fenix.planner.model.Event;
 import com.github.peholmst.fenix.planner.model.Program;
 import com.itextpdf.text.BadElementException;
@@ -193,7 +194,7 @@ public class PDFGenerator {
                     throw new PDFGenerationException("Error creating PDF image from logo", ex);
                 }
             }
-            programNameAndVersion = "Fenix Planner DEVELOPMENT"; // TODO Get this from somewhere
+            programNameAndVersion = String.format("%s %s", ApplicationInfo.getTitle(), ApplicationInfo.getVersion());
         }
 
         @Override
