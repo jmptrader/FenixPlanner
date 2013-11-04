@@ -20,10 +20,16 @@ package com.github.peholmst.fenix.planner.model;
 import org.joda.time.LocalDate;
 
 /**
- *
- * @author peholmst
+ * TODO Document me!
+ * 
+ * @author Petter Holmström
  */
-public class Event implements Comparable<Event> {
+public class Event extends JavaBean implements Comparable<Event> {
+
+    public static final String PROP_DATE = "date";
+    public static final String PROP_ORDER = "order";
+    public static final String PROP_TYPE = "type";
+    public static final String PROP_ORGANIZER = "organizer";
 
     private LocalDate date;
     private int order;
@@ -31,13 +37,24 @@ public class Event implements Comparable<Event> {
     private final MultilingualContent<String> description = new MultilingualContent<>("");
     private EventType type;
     private Organizer organizer;
+    private Program program;
 
+    public Program getProgram() {
+        return program;
+    }
+
+    void setProgram(Program program) {
+        this.program = program;
+    }       
+    
     public LocalDate getDate() {
         return date;
     }
 
     public void setDate(LocalDate date) {
+        LocalDate old = this.date;
         this.date = date;
+        getPropertyChangeSupport().firePropertyChange(PROP_DATE, old, date);
     }
 
     public EventType getType() {
@@ -45,7 +62,9 @@ public class Event implements Comparable<Event> {
     }
 
     public void setType(EventType type) {
+        EventType old = this.type;
         this.type = type;
+        getPropertyChangeSupport().firePropertyChange(PROP_TYPE, old, type);
     }
 
     public Organizer getOrganizer() {
@@ -53,7 +72,9 @@ public class Event implements Comparable<Event> {
     }
 
     public void setOrganizer(Organizer organizer) {
+        Organizer old = this.organizer;
         this.organizer = organizer;
+        getPropertyChangeSupport().firePropertyChange(PROP_ORGANIZER, old, organizer);
     }
 
     public MultilingualContent<String> getSubject() {
@@ -69,7 +90,9 @@ public class Event implements Comparable<Event> {
     }
 
     public void setOrder(int order) {
+        int old = this.order;
         this.order = order;
+        getPropertyChangeSupport().firePropertyChange(PROP_ORDER, old, order);
     }
 
     @Override
