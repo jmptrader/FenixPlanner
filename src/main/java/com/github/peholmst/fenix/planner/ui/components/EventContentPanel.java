@@ -28,19 +28,36 @@ public class EventContentPanel extends javax.swing.JPanel {
 
     private MultilingualTextComponentBinder subjectBinder;
     private MultilingualTextComponentBinder descriptionBinder;
+    private Event event;
 
     public EventContentPanel() {
         initComponents();
     }
 
-    public void bind(Event event) {
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        Event old = this.event;
+        if (old != null) {
+            unbind();
+        }
+        this.event = event;
+        if (event != null) {
+            bind(event);
+        }
+        firePropertyChange("event", old, event);
+    }
+
+    private void bind(Event event) {
         subjectBinder = new MultilingualTextComponentBinder(getLocale());
         subjectBinder.bind(subject, event.getSubject());
         descriptionBinder = new MultilingualTextComponentBinder(getLocale());
         descriptionBinder.bind(description, event.getDescription());
     }
 
-    public void unbind() {
+    private void unbind() {
         subjectBinder.unbind();
         subjectBinder = null;
         descriptionBinder.unbind();
