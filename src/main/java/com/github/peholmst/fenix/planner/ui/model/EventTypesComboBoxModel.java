@@ -17,29 +17,29 @@
  */
 package com.github.peholmst.fenix.planner.ui.model;
 
-import com.github.peholmst.fenix.planner.model.Organizer;
+import com.github.peholmst.fenix.planner.model.EventType;
 import com.github.peholmst.fenix.planner.model.Program;
 
 /**
- * Combo box model for displaying the {@link Organizer}s of a {@link Program} in
+ * Combo box model for displaying the {@link EventType}s of a {@link Program} in
  * a Swing combo box.
  *
  * @author Petter Holmström
  */
-public class OrganizersComboBoxModel extends AbstractProgramComboBoxModel<Organizer> {
+public class EventTypesComboBoxModel extends AbstractProgramComboBoxModel<EventType> {
 
     @Override
     public int getSize() {
-        return program == null ? 0 : program.getOrganizers().size();
+        return program == null ? 0 : program.getEventTypes().size();
     }
 
     @Override
-    public Organizer getElementAt(int index) {
-        return program.getOrganizers().get(index);
+    public EventType getElementAt(int index) {
+        return program.getEventTypes().get(index);
     }
 
     @Override
     protected String getItemPropertyName() {
-        return Program.PROP_ORGANIZERS;
+        return Program.PROP_EVENT_TYPES;
     }
 }
