@@ -33,8 +33,8 @@ public class EventType extends JavaBean {
     public static final String PROP_ORGANIZED = "organized";
 
     private String description = "";
-    private Color backgroundColor = null;
-    private Color foregroundColor = null;
+    private Color backgroundColor = Color.WHITE;
+    private Color foregroundColor = Color.BLACK;
     private boolean organized = false;
     private Program program;
 
@@ -62,6 +62,9 @@ public class EventType extends JavaBean {
 
     public void setBackgroundColor(Color backgroundColor) {
         Color old = this.backgroundColor;
+        if (backgroundColor == null) {
+            backgroundColor = Color.WHITE;
+        }
         this.backgroundColor = backgroundColor;
         getPropertyChangeSupport().firePropertyChange(PROP_BACKGROUNDCOLOR, old, this.backgroundColor);
     }
@@ -72,6 +75,9 @@ public class EventType extends JavaBean {
 
     public void setForegroundColor(Color foregroundColor) {
         Color old = this.foregroundColor;
+        if (foregroundColor == null) {
+            foregroundColor = Color.BLACK;
+        }
         this.foregroundColor = foregroundColor;
         getPropertyChangeSupport().firePropertyChange(PROP_FOREGROUNDCOLOR, old, this.foregroundColor);
     }

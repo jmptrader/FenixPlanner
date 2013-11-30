@@ -18,11 +18,8 @@
 package com.github.peholmst.fenix.planner.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,12 +32,13 @@ public class Program extends JavaBean {
 
     public static final String PROP_ORGANIZERS = "organizers";
     public static final String PROP_EVENT_TYPES = "eventTypes";
+    public static final String PROP_EVENTS = "events";
     private static final Logger logger = LogManager.getLogger();
 
     private final Header header = new Header();
     private final List<Organizer> organizers = new ArrayList<>();
     private final List<EventType> eventTypes = new ArrayList<>();
-    private final Set<Event> events = new HashSet<>();
+    private final List<Event> events = new ArrayList<>();
 
     /**
      *
@@ -54,7 +52,7 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public List<Event> getSortedEvents() {
+    public List<Event> getSortedCopyOfEvents() {
         List<Event> eventList = new ArrayList<>(events);
         Collections.sort(eventList);
         return eventList;
@@ -64,15 +62,15 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public Collection<Event> getEvents() {
-        return Collections.unmodifiableSet(events);
+    public List<Event> getEvents() {
+        return Collections.unmodifiableList(events);
     }
 
     /**
      *
      * @return
      */
-    public Collection<Organizer> getOrganizers() {
+    public List<Organizer> getOrganizers() {
         return Collections.unmodifiableList(organizers);
     }
 
@@ -80,7 +78,7 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public Collection<EventType> getEventTypes() {
+    public List<EventType> getEventTypes() {
         return Collections.unmodifiableList(eventTypes);
     }
 
@@ -88,7 +86,7 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public List<Organizer> getSortedOrganizers() {
+    public List<Organizer> getSortedCopyOfOrganizers() {
         final List<Organizer> organizerList = new ArrayList<>(organizers);
         Collections.sort(organizerList);
         return organizerList;
@@ -102,6 +100,9 @@ public class Program extends JavaBean {
     public Event addEvent(Event event) {
         event.setProgram(this);
         events.add(event);
+        logger.debug("Added event {}", event);
+        getPropertyChangeSupport().fireIndexedPropertyChange(PROP_EVENTS,
+                events.size() - 1, null, event);
         return event;
     }
 
@@ -118,8 +119,18 @@ public class Program extends JavaBean {
      * @param event
      */
     public void removeEvent(Event event) {
-        events.remove(event);
-        event.setProgram(null);
+        int index = events.indexOf(event);
+        removeEvent(index);
+    }
+
+    public void removeEvent(int index) {
+        if (index != -1) {
+            Event removed = events.remove(index);
+            removed.setProgram(null);
+            logger.debug("Removed event {}", removed);
+            getPropertyChangeSupport().fireIndexedPropertyChange(PROP_EVENTS, index,
+                    removed, null);
+        }
     }
 
     /**
@@ -207,6 +218,7 @@ public class Program extends JavaBean {
     public void removeEventType(int index) {
         if (index != -1) {
             EventType removed = eventTypes.remove(index);
+            removed.setProgram(null);
             logger.debug("Removed event type {}", removed);
             getPropertyChangeSupport().fireIndexedPropertyChange(PROP_EVENT_TYPES,
                     index,

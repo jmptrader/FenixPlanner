@@ -39,6 +39,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -130,30 +131,53 @@ public class PDFGenerator {
         table.getDefaultCell().setBackgroundColor(null);
 
         // Events
-        for (Event event : program.getEvents()) {
+        for (Event event : program.getSortedCopyOfEvents()) {
             if (event.getDate().getMonthOfYear() % 2 == 0) {
                 table.getDefaultCell().setBackgroundColor(new BaseColor(0xdd, 0xdd, 0xdd));
             } else {
                 table.getDefaultCell().setBackgroundColor(null);
             }
-            table.addCell(event.getDate().toString("dd.MM", locale));
+
+            if (!event.getType().getBackgroundColor().equals(Color.WHITE)) {
+                table.getDefaultCell().setBackgroundColor(awtColorToBaseColor(event.getType().getBackgroundColor()));
+            }
+            
+            final BaseColor textColor = awtColorToBaseColor(event.getType().getForegroundColor());
+
+            PdfPCell dateCell = new PdfPCell(table.getDefaultCell());
+            dateCell.addElement(new Phrase(event.getDate().toString("dd.MM", locale), changeColor(subjectFont, textColor)));
+            table.addCell(dateCell);
+            
             PdfPCell subjectCell = new PdfPCell(table.getDefaultCell());
-            subjectCell.addElement(new Phrase(event.getSubject().get(locale), subjectFont));
-            if (event.getDescription().hasLocale(locale)) {
-                subjectCell.addElement(new Phrase(event.getDescription().get(locale), descriptionFont));
+            subjectCell.addElement(new Phrase(event.getSubject(), changeColor(subjectFont, textColor)));
+            if (event.getDescription().length() > 0) {
+                subjectCell.addElement(new Phrase(event.getDescription(), changeColor(descriptionFont, textColor)));
             }
             if (event.getOrganizer() == null) {
                 subjectCell.setColspan(2);
             }
             table.addCell(subjectCell);
+            
             if (event.getOrganizer() != null) {
-                table.addCell(event.getOrganizer().getInitials());
+                PdfPCell organizerCell = new PdfPCell(table.getDefaultCell());
+                organizerCell.addElement(new Phrase(event.getOrganizer().getInitials(), changeColor(subjectFont, textColor)));
+                table.addCell(organizerCell);
             }
         }
 
         return table;
     }
 
+    private static Font changeColor(Font original, BaseColor newColor) {
+        Font copy = new Font(original);
+        copy.setColor(newColor);
+        return copy;
+    }
+    
+    private static BaseColor awtColorToBaseColor(Color awtColor) {
+        return new BaseColor(awtColor.getRGB());
+    }
+    
     private void addPageNumbers(PdfReader reader, PdfCopy copy) {
         int pageCount = reader.getNumberOfPages();
         PdfImportedPage page;
@@ -218,13 +242,13 @@ public class PDFGenerator {
             }
 
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
-                    new Phrase(program.getHeader().getDepartmentName().get(locale), departmentNameFont),
+                    new Phrase(program.getHeader().getDepartmentName(), departmentNameFont),
                     rect.getLeft() + textXOffset, rect.getTop(), 0);
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
-                    new Phrase(program.getHeader().getSectionName().get(locale), sectionNameFont),
+                    new Phrase(program.getHeader().getSectionName(), sectionNameFont),
                     rect.getLeft() + textXOffset, rect.getTop() - 14, 0);
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
-                    new Phrase(program.getHeader().getHeading().get(locale).toUpperCase(), headingFont),
+                    new Phrase(program.getHeader().getHeading().toUpperCase(), headingFont),
                     rect.getLeft() + textXOffset, rect.getTop() - 40, 0);
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_RIGHT,
                     new Phrase(program.getHeader().getAuthorInitials(), authorFont),

@@ -59,9 +59,9 @@ public class PDFGeneratorTestProgram {
     private static Program createProgram() throws IOException {
         Program program = new Program();
 
-        program.getHeader().getDepartmentName().set(sv, "Ankeborgs Frivilliga Brandkår");
-        program.getHeader().getSectionName().set(sv, "Larmavdelningen");
-        program.getHeader().getHeading().set(sv, "Övningsprogram för år 2013");
+        program.getHeader().setDepartmentName("Ankeborgs Frivilliga Brandkår");
+        program.getHeader().setSectionName("Larmavdelningen");
+        program.getHeader().setHeading("Övningsprogram för år 2013");
         program.getHeader().setLogo(ImageIO.read(PDFGeneratorTestProgram.class.getResourceAsStream("logo.png")));
         program.getHeader().setAuthorInitials("K.A.");
         
@@ -80,8 +80,8 @@ public class PDFGeneratorTestProgram {
         for (int i = 0; i < 52; ++i) {
             event = program.addEvent();
             event.setDate(date);
-            event.getSubject().set(sv, pigLatin(30, false));
-            event.getDescription().set(sv, pigLatin(150, true));
+            event.setSubject(pigLatin(30, false));
+            event.setDescription(pigLatin(150, true));
             event.setOrganizer(organizers.get(rnd.nextInt(organizers.size())));
             date = date.plusWeeks(1);
         }
