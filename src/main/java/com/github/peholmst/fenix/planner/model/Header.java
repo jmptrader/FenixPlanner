@@ -17,18 +17,35 @@
  */
 package com.github.peholmst.fenix.planner.model;
 
+import com.github.peholmst.fenix.planner.utils.StringUtils;
 import java.awt.image.BufferedImage;
 
 /**
+ * TODO Document me!
+ * 
  * @author Petter Holmström
  */
-public class Header {
+public class Header extends JavaBean {
 
-    private final MultilingualContent<String> departmentName = new MultilingualContent<>("");
-    private final MultilingualContent<String> sectionName = new MultilingualContent<>("");
-    private final MultilingualContent<String> heading = new MultilingualContent<>("");
+    public static final String PROP_DEPARTMENTNAME = "departmentName";
+    public static final String PROP_SECTIONNAME = "sectionName";
+    public static final String PROP_HEADING = "heading";
+    public static final String PROP_AUTHORINITIALS = "authorInitials";
+
+    private String departmentName = "";
+    private String sectionName = "";
+    private String heading = "";
     private String authorInitials = "";
     private BufferedImage logo;
+    private Program program;
+
+    public Program getProgram() {
+        return program;
+    }
+
+    void setProgram(Program program) {
+        this.program = program;
+    }
 
     public BufferedImage getLogo() {
         return logo;
@@ -47,21 +64,38 @@ public class Header {
     }
 
     public void setAuthorInitials(String authorInitials) {
-        if (authorInitials == null) {
-            authorInitials = "";
-        }
-        this.authorInitials = authorInitials;
+        String old = this.authorInitials;
+        this.authorInitials = StringUtils.nullToEmptyString(authorInitials);
+        getPropertyChangeSupport().firePropertyChange(PROP_AUTHORINITIALS, old, this.authorInitials);
     }
 
-    public MultilingualContent<String> getDepartmentName() {
+    public String getDepartmentName() {
         return departmentName;
     }
 
-    public MultilingualContent<String> getSectionName() {
+    public void setDepartmentName(String departmentName) {
+        String old = this.departmentName;
+        this.departmentName = departmentName;
+        getPropertyChangeSupport().firePropertyChange(PROP_DEPARTMENTNAME, old, this.departmentName);
+    }
+
+    public String getSectionName() {
         return sectionName;
     }
 
-    public MultilingualContent<String> getHeading() {
+    public void setSectionName(String sectionName) {
+        String old = this.sectionName;
+        this.sectionName = sectionName;
+        getPropertyChangeSupport().firePropertyChange(PROP_SECTIONNAME, old, this.sectionName);
+    }
+
+    public String getHeading() {
         return heading;
+    }
+
+    public void setHeading(String heading) {
+        String old = this.heading;
+        this.heading = heading;
+        getPropertyChangeSupport().firePropertyChange(PROP_HEADING, old, this.heading);
     }
 }

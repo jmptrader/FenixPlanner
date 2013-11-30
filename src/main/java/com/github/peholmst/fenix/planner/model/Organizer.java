@@ -17,13 +17,20 @@
  */
 package com.github.peholmst.fenix.planner.model;
 
+import com.github.peholmst.fenix.planner.utils.StringUtils;
+
 /**
  * TODO Document me!
  * 
  * @author Petter Holmström
  */
-public class Organizer {
+public class Organizer extends JavaBean implements Comparable<Organizer> {
 
+    public static final String PROP_INITIALS = "initials";
+    public static final String PROP_FULLNAME = "fullName";
+    public static final String PROP_PHONENUMBER = "phoneNumber";
+    public static final String PROP_EMAIL = "email";
+    
     private String initials = "";
     private String fullName = "";
     private String phoneNumber = "";
@@ -43,10 +50,9 @@ public class Organizer {
     }
 
     public void setInitials(String initials) {
-        if (initials == null) {
-            initials = "";
-        }
-        this.initials = initials;
+        String old = this.initials;
+        this.initials = StringUtils.nullToEmptyString(initials);
+        getPropertyChangeSupport().firePropertyChange(PROP_INITIALS, old, this.initials);
     }
 
     public String getFullName() {
@@ -54,10 +60,9 @@ public class Organizer {
     }
 
     public void setFullName(String fullName) {
-        if (fullName == null) {
-            fullName = "";
-        }
-        this.fullName = fullName;
+        String old = this.fullName;
+        this.fullName = StringUtils.nullToEmptyString(fullName);
+        getPropertyChangeSupport().firePropertyChange(PROP_FULLNAME, old, this.fullName);
     }
 
     public String getPhoneNumber() {
@@ -65,10 +70,9 @@ public class Organizer {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null) {
-            phoneNumber = "";
-        }
-        this.phoneNumber = phoneNumber;
+        String old = this.phoneNumber;
+        this.phoneNumber = StringUtils.nullToEmptyString(phoneNumber);
+        getPropertyChangeSupport().firePropertyChange(PROP_PHONENUMBER, old, this.phoneNumber);        
     }
 
     public String getEmail() {
@@ -76,10 +80,14 @@ public class Organizer {
     }
 
     public void setEmail(String email) {
-        if (email == null) {
-            email = "";
-        }
-        this.email = email;
+        String old = this.email;
+        this.email = StringUtils.nullToEmptyString(email);
+        getPropertyChangeSupport().firePropertyChange(PROP_EMAIL, old, this.email);
+    }
+
+    @Override
+    public int compareTo(Organizer o) {
+        return fullName.compareTo(o.fullName);
     }
 
 }

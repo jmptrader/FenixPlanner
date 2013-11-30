@@ -18,8 +18,8 @@
 package com.github.peholmst.fenix.planner.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * TODO Document me!
- * 
+ *
  * @author Petter Holmström
  */
 public class Program extends JavaBean {
@@ -54,7 +54,7 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public List<Event> getEvents() {
+    public List<Event> getSortedEvents() {
         List<Event> eventList = new ArrayList<>(events);
         Collections.sort(eventList);
         return eventList;
@@ -64,7 +64,15 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public List<Organizer> getOrganizers() {
+    public Collection<Event> getEvents() {
+        return Collections.unmodifiableSet(events);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public Collection<Organizer> getOrganizers() {
         return Collections.unmodifiableList(organizers);
     }
 
@@ -72,7 +80,7 @@ public class Program extends JavaBean {
      *
      * @return
      */
-    public List<EventType> getEventTypes() {
+    public Collection<EventType> getEventTypes() {
         return Collections.unmodifiableList(eventTypes);
     }
 
@@ -82,13 +90,7 @@ public class Program extends JavaBean {
      */
     public List<Organizer> getSortedOrganizers() {
         final List<Organizer> organizerList = new ArrayList<>(organizers);
-        Collections.sort(organizerList, new Comparator<Organizer>() {
-
-            @Override
-            public int compare(Organizer o1, Organizer o2) {
-                return o1.getInitials().compareTo(o2.getInitials());
-            }
-        });
+        Collections.sort(organizerList);
         return organizerList;
     }
 
@@ -181,6 +183,7 @@ public class Program extends JavaBean {
      * @return
      */
     public EventType addEventType(EventType eventType) {
+        eventType.setProgram(this);
         eventTypes.add(eventType);
         logger.debug("Added event type {}", eventType);
         getPropertyChangeSupport().fireIndexedPropertyChange(PROP_EVENT_TYPES,

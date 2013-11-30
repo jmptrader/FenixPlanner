@@ -17,6 +17,7 @@
  */
 package com.github.peholmst.fenix.planner.model;
 
+import com.github.peholmst.fenix.planner.utils.StringUtils;
 import org.joda.time.LocalDate;
 
 /**
@@ -30,11 +31,13 @@ public class Event extends JavaBean implements Comparable<Event> {
     public static final String PROP_ORDER = "order";
     public static final String PROP_TYPE = "type";
     public static final String PROP_ORGANIZER = "organizer";
+    public static final String PROP_SUBJECT = "subject";
+    public static final String PROP_DESCRIPTION = "description";
 
     private LocalDate date;
     private int order;
-    private final MultilingualContent<String> subject = new MultilingualContent<>("");
-    private final MultilingualContent<String> description = new MultilingualContent<>("");
+    private String subject = "";
+    private String description = "";
     private EventType type;
     private Organizer organizer;
     private Program program;
@@ -54,7 +57,7 @@ public class Event extends JavaBean implements Comparable<Event> {
     public void setDate(LocalDate date) {
         LocalDate old = this.date;
         this.date = date;
-        getPropertyChangeSupport().firePropertyChange(PROP_DATE, old, date);
+        getPropertyChangeSupport().firePropertyChange(PROP_DATE, old, this.date);
     }
 
     public EventType getType() {
@@ -64,7 +67,7 @@ public class Event extends JavaBean implements Comparable<Event> {
     public void setType(EventType type) {
         EventType old = this.type;
         this.type = type;
-        getPropertyChangeSupport().firePropertyChange(PROP_TYPE, old, type);
+        getPropertyChangeSupport().firePropertyChange(PROP_TYPE, old, this.type);
     }
 
     public Organizer getOrganizer() {
@@ -74,15 +77,27 @@ public class Event extends JavaBean implements Comparable<Event> {
     public void setOrganizer(Organizer organizer) {
         Organizer old = this.organizer;
         this.organizer = organizer;
-        getPropertyChangeSupport().firePropertyChange(PROP_ORGANIZER, old, organizer);
+        getPropertyChangeSupport().firePropertyChange(PROP_ORGANIZER, old, this.organizer);
     }
 
-    public MultilingualContent<String> getSubject() {
+    public String getSubject() {
         return subject;
     }
 
-    public MultilingualContent<String> getDescription() {
+    public void setSubject(String subject) {
+        String old = this.subject;
+        this.subject = StringUtils.nullToEmptyString(subject);
+        getPropertyChangeSupport().firePropertyChange(PROP_SUBJECT, old, this.subject);
+    }    
+    
+    public String getDescription() {
         return description;
+    }
+    
+    public void setDescription(String description) {
+        String old = this.description;
+        this.description = StringUtils.nullToEmptyString(description);
+        getPropertyChangeSupport().firePropertyChange(PROP_DESCRIPTION, old, this.description);
     }
 
     public int getOrder() {
@@ -92,7 +107,7 @@ public class Event extends JavaBean implements Comparable<Event> {
     public void setOrder(int order) {
         int old = this.order;
         this.order = order;
-        getPropertyChangeSupport().firePropertyChange(PROP_ORDER, old, order);
+        getPropertyChangeSupport().firePropertyChange(PROP_ORDER, old, this.order);
     }
 
     @Override
