@@ -17,6 +17,7 @@
  */
 package com.github.peholmst.fenix.planner.model;
 
+import com.github.peholmst.fenix.planner.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,9 +34,14 @@ public class Program extends JavaBean {
     public static final String PROP_ORGANIZERS = "organizers";
     public static final String PROP_EVENT_TYPES = "eventTypes";
     public static final String PROP_EVENTS = "events";
+    public static final String PROP_FOREWORD = "foreword";
+    public static final String PROP_AFTERWORD = "afterword";
+
     private static final Logger logger = LogManager.getLogger();
 
     private final Header header = new Header();
+    private String foreword = "";
+    private String afterword = "";
     private final List<Organizer> organizers = new ArrayList<>();
     private final List<EventType> eventTypes = new ArrayList<>();
     private final List<Event> events = new ArrayList<>();
@@ -225,4 +231,41 @@ public class Program extends JavaBean {
                     removed, null);
         }
     }
+
+    /**
+     *
+     * @return
+     */
+    public String getForeword() {
+        return foreword;
+    }
+
+    /**
+     *
+     * @param foreword
+     */
+    public void setForeword(String foreword) {
+        String old = this.foreword;
+        this.foreword = StringUtils.nullToEmptyString(foreword);
+        getPropertyChangeSupport().firePropertyChange(PROP_FOREWORD, old, this.foreword);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getAfterword() {
+        return afterword;
+    }
+
+    /**
+     *
+     * @param afterword
+     */
+    public void setAfterword(String afterword) {
+        String old = this.afterword;
+        this.afterword = afterword;
+        getPropertyChangeSupport().firePropertyChange(PROP_AFTERWORD, old, this.afterword);
+    }
+
 }

@@ -19,15 +19,20 @@ package com.github.peholmst.fenix.planner.pdf;
 
 import com.github.peholmst.fenix.planner.ApplicationInfo;
 import com.github.peholmst.fenix.planner.model.Event;
+import com.github.peholmst.fenix.planner.model.Organizer;
 import com.github.peholmst.fenix.planner.model.Program;
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.List;
+import com.itextpdf.text.ListItem;
 import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.BadPdfFormatException;
@@ -39,6 +44,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -62,7 +68,7 @@ public class PDFGenerator {
     private static final float LEFT_MARGIN = 36;
     private static final float RIGHT_MARGIN = 36;
     private static final float TOP_MARGIN = 100;
-    private static final float BOTTOM_MARGIN = 54;
+    private static final float BOTTOM_MARGIN = 64;
     private static final float ART_BOX_LEFT_MARGIN = 36;
     private static final float ART_BOX_RIGHT_MARGIN = 36;
     private static final float ART_BOX_TOP_MARGIN = 36;
@@ -76,6 +82,9 @@ public class PDFGenerator {
     private static final Font headingFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
     private static final Font authorFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
     private static final Font programFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL, BaseColor.GRAY);
+    private static final Font organizerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
+    private static final Font freeTextFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
+    private static final Font subHeaderFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
 
     public PDFGenerator(Program program, Locale locale) {
         this.program = program;
@@ -94,7 +103,10 @@ public class PDFGenerator {
                     pageSize.getTop() - ART_BOX_TOP_MARGIN));
             writer.setPageEvent(new HeaderFooter());
             document.open();
-            document.add(createEventTable());
+            createAndAddForeword();
+            createAndAddEventTable();
+            createAndAddAfterword();
+            createAndAddOrganizerTable();
             document.close();
             writer.close();
 
@@ -111,14 +123,97 @@ public class PDFGenerator {
         }
     }
 
-    private PdfPTable createEventTable() {
+    private void createAndAddForeword() throws DocumentException {
+        if (program.getForeword().length() > 0) {
+            parseAndAddFreeText(program.getForeword());
+        } else {
+            System.out.println("No foreword found");
+        }
+    }
+
+    private void createAndAddAfterword() throws DocumentException {
+        if (program.getForeword().length() > 0) {
+            parseAndAddFreeText(program.getAfterword());
+        } else {
+            System.out.println("No afterword found");
+        }
+    }
+
+    private void parseAndAddFreeText(String text) throws DocumentException {
+        List currentList = null;
+        for (String line : text.split("\n")) {
+            if (line.startsWith("- ")) {
+                if (currentList == null) {
+                    currentList = new List(false, 10f);
+                    currentList.setListSymbol("\u2022");
+                }
+                ListItem item = new ListItem();
+                currentList.add(item);
+                parseAndAddBodyTextLineToParagraph(item, line.substring(2), freeTextFont);
+            } else {
+                if (currentList != null && !currentList.isEmpty()) {
+                    currentList.getLastItem().setSpacingAfter(5);
+                    currentList.getFirstItem().setSpacingBefore(5);
+                    document.add(currentList);
+                    currentList = null;
+                }
+                Paragraph p = new Paragraph();
+                p.setSpacingAfter(5);
+                p.setSpacingBefore(5);
+                parseAndAddBodyTextLineToParagraph(p, line, freeTextFont);
+                document.add(p);
+            }
+        }
+    }
+    
+    private void parseAndAddBodyTextLineToParagraph(Paragraph paragraph, String line, Font font) {
+        // TODO add support for additional styles
+        // TODO add better error checking and reporting
+        Font currentFont = new Font(font);
+        StringBuilder sb = new StringBuilder();
+        for (char c : line.toCharArray()) {
+            if (c == '*') {
+                if (sb.length() > 0) {
+                    paragraph.add(new Phrase(sb.toString(), currentFont));
+                    sb = new StringBuilder();
+                }
+                if (currentFont.isBold()) {
+                    currentFont = deriveWithStyle(currentFont, currentFont.getStyle() & ~Font.BOLD);
+                } else {                    
+                    currentFont = deriveWithStyle(currentFont, currentFont.getStyle() | Font.BOLD);
+                }
+            } else if (c == '_') {
+                if (sb.length() > 0) {
+                    paragraph.add(new Phrase(sb.toString(), currentFont));
+                    sb = new StringBuilder();
+                }
+                if (currentFont.isItalic()) {
+                    currentFont = deriveWithStyle(currentFont, currentFont.getStyle() & ~Font.ITALIC);
+                } else {
+                    currentFont = deriveWithStyle(currentFont, currentFont.getStyle() | Font.ITALIC);
+                }
+            } else {
+                sb.append(c);
+            }           
+        }
+        paragraph.add(new Phrase(sb.toString(), currentFont));
+    }
+        
+    private static Font deriveWithStyle(Font original, int newStyle) {
+        final Font copy = new Font(original);
+        copy.setStyle(newStyle);
+        return copy;
+    }
+    
+    private void createAndAddEventTable() throws DocumentException {
         PdfPTable table = new PdfPTable(new float[]{1, 7, 1.2f});
         table.setWidthPercentage(100f);
         table.getDefaultCell().setUseAscender(true);
         table.getDefaultCell().setUseDescender(true);
+        table.setSpacingBefore(20);
+        table.setSpacingAfter(20);
 
         // Header row
-        //table.getDefaultCell().setBackgroundColor(BaseColor.GRAY);
         table.getDefaultCell().setBorderWidthLeft(0);
         table.getDefaultCell().setBorderWidthTop(0);
         table.getDefaultCell().setBorderWidthRight(0);
@@ -141,13 +236,13 @@ public class PDFGenerator {
             if (!event.getType().getBackgroundColor().equals(Color.WHITE)) {
                 table.getDefaultCell().setBackgroundColor(awtColorToBaseColor(event.getType().getBackgroundColor()));
             }
-            
+
             final BaseColor textColor = awtColorToBaseColor(event.getType().getForegroundColor());
 
             PdfPCell dateCell = new PdfPCell(table.getDefaultCell());
             dateCell.addElement(new Phrase(event.getDate().toString("dd.MM", locale), changeColor(subjectFont, textColor)));
             table.addCell(dateCell);
-            
+
             PdfPCell subjectCell = new PdfPCell(table.getDefaultCell());
             subjectCell.addElement(new Phrase(event.getSubject(), changeColor(subjectFont, textColor)));
             if (event.getDescription().length() > 0) {
@@ -157,7 +252,7 @@ public class PDFGenerator {
                 subjectCell.setColspan(2);
             }
             table.addCell(subjectCell);
-            
+
             if (event.getOrganizer() != null) {
                 PdfPCell organizerCell = new PdfPCell(table.getDefaultCell());
                 organizerCell.addElement(new Phrase(event.getOrganizer().getInitials(), changeColor(subjectFont, textColor)));
@@ -165,7 +260,31 @@ public class PDFGenerator {
             }
         }
 
-        return table;
+        document.add(table);
+    }
+
+    private void createAndAddOrganizerTable() throws DocumentException {
+        PdfPTable table = new PdfPTable(new float[]{1, 3, 4, 2});
+        table.setSpacingBefore(20);
+
+        table.setWidthPercentage(100f);
+        table.getDefaultCell().setUseAscender(true);
+        table.getDefaultCell().setUseDescender(true);
+
+        // Header row
+        table.getDefaultCell().setBorder(0);
+        table.getDefaultCell().setPadding(5);
+        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.getDefaultCell().setBackgroundColor(null);
+
+        for (Organizer organizer : program.getSortedCopyOfOrganizers()) {
+            table.addCell(new Phrase(organizer.getInitials(), organizerFont));
+            table.addCell(new Phrase(organizer.getFullName(), organizerFont));
+            table.addCell(new Phrase(organizer.getEmail(), organizerFont));
+            table.addCell(new Phrase(organizer.getPhoneNumber(), organizerFont));
+        }
+
+        document.add(table);
     }
 
     private static Font changeColor(Font original, BaseColor newColor) {
@@ -173,11 +292,11 @@ public class PDFGenerator {
         copy.setColor(newColor);
         return copy;
     }
-    
+
     private static BaseColor awtColorToBaseColor(Color awtColor) {
         return new BaseColor(awtColor.getRGB());
     }
-    
+
     private void addPageNumbers(PdfReader reader, PdfCopy copy) {
         int pageCount = reader.getNumberOfPages();
         PdfImportedPage page;
@@ -261,7 +380,7 @@ public class PDFGenerator {
                     new Phrase(String.format("Utskrivet %s", currentDate), footerFont),
                     rect.getLeft(), rect.getBottom() + 5, 0);
             ColumnText.showTextAligned(writer.getDirectContent(), Element.ALIGN_LEFT,
-                    new Phrase(programNameAndVersion, programFont),
+                    new Phrase("Skapad med " + programNameAndVersion, programFont),
                     rect.getLeft(), rect.getBottom() - 7, 0);
         }
     }

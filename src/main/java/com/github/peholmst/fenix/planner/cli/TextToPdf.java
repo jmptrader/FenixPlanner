@@ -31,8 +31,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.joda.time.format.DateTimeFormat;
 
@@ -47,8 +45,8 @@ public class TextToPdf {
     private final File input;
     private final File output;
     private final Map<Block, BlockParser> parsers = new HashMap<>();
-    private Map<String, Organizer> organizers = new HashMap<>();
-    private Map<String, EventType> eventTypes = new HashMap<>();
+    private final Map<String, Organizer> organizers = new HashMap<>();
+    private final Map<String, EventType> eventTypes = new HashMap<>();
 
     TextToPdf(File input, File output) throws IOException {
         this.input = input;
@@ -58,11 +56,13 @@ public class TextToPdf {
         parsers.put(Block.ORGANIZERS, new OrganizersParser());
         parsers.put(Block.EVENTTYPES, new EventTypesParser());
         parsers.put(Block.EVENTS, new EventsParser());
+        parsers.put(Block.FOREWORD, new ForewordParser());
+        parsers.put(Block.AFTERWORD, new AfterwordParser());
     }
 
     enum Block {
 
-        HEADER, ORGANIZERS, EVENTTYPES, EVENTS
+        HEADER, ORGANIZERS, FOREWORD, EVENTTYPES, EVENTS, AFTERWORD
     }
 
     interface BlockParser {
@@ -88,6 +88,12 @@ public class TextToPdf {
                         break;
                     case ":EVENTS":
                         currentBlock = Block.EVENTS;
+                        break;
+                    case ":FOREWORD":
+                        currentBlock = Block.FOREWORD;
+                        break;
+                    case ":AFTERWORD":
+                        currentBlock = Block.AFTERWORD;
                         break;
                     case "":
                         break;
@@ -235,7 +241,34 @@ public class TextToPdf {
             }
         }
     }
+    
+    class ForewordParser implements BlockParser {
 
+        @Override
+        public void parseLine(String line) {
+            StringBuilder sb = new StringBuilder(program.getForeword());
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(line);
+            program.setForeword(sb.toString());
+        }        
+    }
+
+    class AfterwordParser implements BlockParser {
+
+        @Override
+        public void parseLine(String line) {
+            StringBuilder sb = new StringBuilder(program.getAfterword());
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(line);
+            program.setAfterword(sb.toString());
+        }        
+    }
+    
+    
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
             System.out.println("Requires two arguments: [input file] [output file]");
