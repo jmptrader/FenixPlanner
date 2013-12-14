@@ -17,7 +17,6 @@
  */
 package fenix.planner.pdf;
 
-import fenix.planner.pdf.PDFGenerator;
 import fenix.planner.model.Event;
 import fenix.planner.model.Organizer;
 import fenix.planner.model.Program;

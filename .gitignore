@@ -1,6 +1,6 @@
-/fenix-planner-lib/target/
-/fenix-planner-lib/nb-configuration.xml
-/fenix-planner-lib/nbactions.xml
 /fenix-planner-ui/nbproject/private/
 /fenix-planner-ui/build/
 /fenix-planner-ui/dist/
+/fenix-planner-lib/nbproject/private/
+/fenix-planner-lib/build/
+/fenix-planner-lib/dist/

@@ -17,13 +17,8 @@
  */
 package fenix.planner.pdf;
 
-import fenix.planner.ApplicationInfo;
-import fenix.planner.model.Event;
-import fenix.planner.model.Organizer;
-import fenix.planner.model.Program;
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -44,7 +39,10 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.draw.LineSeparator;
+import fenix.planner.ApplicationInfo;
+import fenix.planner.model.Event;
+import fenix.planner.model.Organizer;
+import fenix.planner.model.Program;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
