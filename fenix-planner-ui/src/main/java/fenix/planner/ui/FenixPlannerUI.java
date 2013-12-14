@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package main.java.fenix.planner.ui;
+package fenix.planner.ui;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
